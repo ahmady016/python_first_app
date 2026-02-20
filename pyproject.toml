@@ -4,4 +4,8 @@ version = "0.1.0"
 description = "working with files and apis in python"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "faker>=40.4.0",
+    "icecream>=2.1.10",
+    "uuid>=1.30",
+]
