@@ -87,7 +87,7 @@ class JsonDatabase:
         ic(f"All Records Loaded From: {folder_path}")
         return data
 
-    def get_record_count(self, entity_name: str) -> int:
+    def get_records_count(self, entity_name: str) -> int:
         # get the folder path
         folder_path = os.path.join(self.base_path, entity_name)
         # check if the folder exists
@@ -100,7 +100,7 @@ class JsonDatabase:
             if filename.endswith('.json')
         ]
         # return the number of records
-        ic(f"Found ({len(files)}) Records in Folder: {folder_path}")
+        # ic(f"Found ({len(files)}) Records in Folder: {folder_path}")
         return len(files)
 
     @property
@@ -115,7 +115,7 @@ class JsonDatabase:
     def entities_dict(self) -> dict[str, int]:
         # get a dictionary of each entity name and their records count
         return {
-            entity_name: self.get_record_count(entity_name)
+            entity_name: self.get_records_count(entity_name)
             for entity_name in self.entities_list
         }
 
