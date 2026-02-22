@@ -1,9 +1,8 @@
 ########################################################################################
-import json
 import os
+import json
+from icecream import ic    # pyright: ignore[reportMissingImports]
 ########################################################################################
-
-
 class JsonDatabase:
     # constructor to create the database folder
     def __init__(self, base_path: str = ".db"):
@@ -34,20 +33,20 @@ class JsonDatabase:
         with open(file_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
         # print a success message
-        print(f"✅ Data Saved to: {file_path}")
+        ic(f"Data Saved to: {file_path}")
 
     def get_record(self, entity_name: str, record_id: str) -> object | None:
         # get the file path
         _, file_path = self.__get_paths(entity_name, record_id)
         # check if the file exists
         if not os.path.exists(file_path):
-            print(f"❌ File Not Found: {file_path}")
+            ic("File Not Found:", file_path)
             return None
         # load the data from the file
         with open(file_path, 'r', encoding='utf-8') as json_file:
             data = json.load(json_file)
         # print a success message
-        print(f"✅ Data Loaded from: {file_path}")
+        ic(f"Data Loaded from: {file_path}")
         return data
 
     def delete_record(self, entity_name: str, record_id: str) -> bool:
@@ -56,14 +55,14 @@ class JsonDatabase:
         # check if the file exists then delete it
         if os.path.exists(file_path):
             os.remove(file_path)
-            print(f"✅ Data Deleted from: {file_path}")
+            ic(f"Data Deleted from: {file_path}")
             # check if the folder is empty then remove it
             if not os.listdir(folder_path):
                 os.rmdir(folder_path)
-                print(f"✅ Folder is Empty and Deleted: {folder_path}")
+                ic(f"Folder is Empty and Deleted: {folder_path}")
             return True
         # print a failure message if the file does not exist
-        print(f"❌ File Not Found: {file_path}")
+        ic(f"File Not Found: {file_path}")
         return False
 
     # get all records in an entity folder in the database folder
@@ -72,7 +71,7 @@ class JsonDatabase:
         folder_path = os.path.join(self.base_path, entity_name)
         # check if the folder exists
         if not os.path.exists(folder_path):
-            print(f"❌ Folder Not Found: {folder_path}")
+            ic(f"Folder Not Found: {folder_path}")
             return None
         # get the file paths
         record_ids = [
@@ -85,7 +84,7 @@ class JsonDatabase:
             for record_id in record_ids
         ]
         # print a success message
-        print(f"✅ All Records Loaded From: {folder_path}")
+        ic(f"All Records Loaded From: {folder_path}")
         return data
 
     def get_record_count(self, entity_name: str) -> int:
@@ -93,7 +92,7 @@ class JsonDatabase:
         folder_path = os.path.join(self.base_path, entity_name)
         # check if the folder exists
         if not os.path.exists(folder_path):
-            print(f"❌ Folder Not Found: {folder_path}")
+            ic(f"Folder Not Found: {folder_path}")
             return 0
         # get a list of all json files names
         files = [
@@ -101,6 +100,7 @@ class JsonDatabase:
             if filename.endswith('.json')
         ]
         # return the number of records
+        ic(f"Found ({len(files)}) Records in Folder: {folder_path}")
         return len(files)
 
     @property

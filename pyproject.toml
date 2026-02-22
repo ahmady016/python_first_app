@@ -7,5 +7,6 @@ requires-python = ">=3.14"
 dependencies = [
     "faker>=40.4.0",
     "icecream>=2.1.10",
+    "rich>=14.3.3",
     "uuid>=1.30",
 ]
