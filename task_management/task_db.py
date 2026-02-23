@@ -31,11 +31,11 @@ class TaskDb:
             # print entities stats
             self.print_entities_stats()
             # print departments info
-            self.print_departments_info()
+            # self.print_departments_info()
             # print employees info
-            self.print_employees_info()
+            # self.print_employees_info()
             # print tasks info
-            self.print_tasks_info()
+            # self.print_tasks_info()
 
     def print_entities_stats(self):
         ic("Task Management Database State:")
@@ -85,6 +85,39 @@ class TaskDb:
             )
             return employee
         return None
+
+    def get_department(self, department_id: str) -> Department | None:
+        if department_id in TaskDb.ENTITIES.get("departments"):
+            return TaskDb.ENTITIES["departments"][department_id]
+        return None
+    def add_department(self, department: Department) -> None:
+        self.__db.save_record("departments", department.id, department)
+    def update_department(self, department: Department) -> None:
+        self.__db.update_record("departments", department.id, department)
+    def delete_department(self, department_id: str) -> None:
+        self.__db.delete_record("departments", department_id)
+
+    def get_employee(self, employee_id: str) -> Employee | None:
+        if employee_id in TaskDb.ENTITIES.get("employees"):
+            return TaskDb.ENTITIES["employees"][employee_id]
+        return None
+    def add_employee(self, employee: Employee) -> None:
+        self.__db.save_record("employees", employee.id, employee)
+    def update_employee(self, employee: Employee) -> None:
+        self.__db.update_record("employees", employee.id, employee)
+    def delete_employee(self, employee_id: str) -> None:
+        self.__db.delete_record("employees", employee_id)
+
+    def get_task(self, task_id: str) -> Task | None:
+        if task_id in TaskDb.ENTITIES.get("tasks"):
+            return TaskDb.ENTITIES["tasks"][task_id]
+        return None
+    def add_task(self, task: Task) -> None:
+        self.__db.save_record("tasks", task.id, task)
+    def update_task(self, task: Task) -> None:
+        self.__db.update_record("tasks", task.id, task)
+    def delete_task(self, task_id: str) -> None:
+        self.__db.delete_record("tasks", task_id)
 
     @property
     def entities_stats(self) -> dict[str, int]:
@@ -217,15 +250,15 @@ class TaskDb:
             self.save_all(departments, employees, tasks)
             ic("Data Saved To JSON Database:")
             ic("-------------------------")
+            # print entities stats
+            self.print_entities_stats()
+            # print departments info
+            self.print_departments_info()
+            # print employees info
+            self.print_employees_info()
+            # print tasks info
+            self.print_tasks_info()
         else:
             ic("Data Already Seeded in JSON Database:")
             ic("-------------------------")
 
-        # print entities stats
-        self.print_entities_stats()
-        # print departments info
-        self.print_departments_info()
-        # print employees info
-        self.print_employees_info()
-        # print tasks info
-        self.print_tasks_info()

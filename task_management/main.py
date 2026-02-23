@@ -24,6 +24,21 @@ ic("################################")
 # create a TaskDb instance and seed the database with random data
 task_db = TaskDb()
 task_db.seed()
+# test get update a task
+TASK_ID = "ffe3f9cc-631c-40af-923f-fca5839688be"
+existed_task = task_db.get_task(TASK_ID)
+if existed_task:
+    ic(f"Task with id ({TASK_ID}) Found")
+    ic("-------------------------------")
+    # existed_task.title += " (The Title Updated Again)"
+    # existed_task.description += " (The Description Updated Again)"
+    # existed_task.priority = "low"
+    # existed_task.state = "cancelled"
+    # task_db.update_task(existed_task)
+    task_db.delete_task(TASK_ID)
+else:
+    ic(f"Task with id ({TASK_ID}) Not Found")
+    ic("-------------------------------")
 ############################################################################
 ic("################################")
 ic("Task Management App Finished")
