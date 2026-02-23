@@ -6,8 +6,23 @@ class Employee:
     EMPLOYEE_GENDERS = ["male", "female"]
     EMPLOYEE_STATES = ["full-time", "part-time", "internship", "retired", "unemployed"]
 
-    def __init__(self, first_name: str, last_name: str, gender: str, email: str, phone_number: str, birth_date: str, hire_date: str, job_title: str, state: str, department_id: str):
-        self.id = str(uuid4())
+    def __init__(self,
+        first_name: str,
+        last_name: str,
+        gender: str,
+        email: str,
+        phone_number: str,
+        birth_date: str,
+        hire_date: str,
+        job_title: str,
+        state: str,
+        department_id: str,
+        id: str = "",
+        tasks_count: int = 0,
+        created_at: str = "",
+        updated_at: str = ""
+    ):
+        self.id = id if id else str(uuid4())
         self.first_name = first_name
         self.last_name = last_name
         self.gender = gender if gender in self.EMPLOYEE_GENDERS else "male"
@@ -18,6 +33,9 @@ class Employee:
         self.job_title = job_title
         self.state = state if state in self.EMPLOYEE_STATES else "unemployed"
         self.department_id = department_id
+        self.tasks_count = tasks_count
+        self.created_at = created_at
+        self.updated_at = updated_at
 
     ### convert date to date object and get the current date then calculate years passed from the date
     def __get_years_from(self, date: str):
@@ -35,7 +53,7 @@ class Employee:
         return self.__get_years_from(self.hire_date)
 
     def __str__(self):
-        return f"""----------------
+        return f"""
 id: {self.id}
 first_name: {self.first_name}
 last_name: {self.last_name}
@@ -49,6 +67,9 @@ age: {self.age}
 work_experience: {self.work_experience}
 state: {self.state}
 department_id: {self.department_id}
+tasks: {self.tasks_count}
+created_at: {self.created_at}
+updated_at: {self.updated_at}
 ----------------"""
     def __repr__(self):
-        return f"Employee({self.id}, {self.first_name}, {self.last_name}, {self.gender}, {self.email}, {self.phone_number}, {self.birth_date}, {self.hire_date}, {self.job_title}, {self.state}, {self.department_id})"
+        return f"Employee({self.id}, {self.first_name}, {self.last_name}, {self.gender}, {self.email}, {self.phone_number}, {self.birth_date}, {self.hire_date}, {self.job_title}, {self.state}, {self.department_id}, tasks={self.tasks_count}, created_at={self.created_at}, updated_at={self.updated_at})"

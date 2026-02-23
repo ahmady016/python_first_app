@@ -1,6 +1,7 @@
 ########################################################################################
 import os
 import json
+from datetime import datetime
 from icecream import ic    # pyright: ignore[reportMissingImports]
 ########################################################################################
 class JsonDatabase:
@@ -29,25 +30,32 @@ class JsonDatabase:
         _, file_path = self.__get_paths(entity_name, record_id)
         # convert the data to a dictionary
         data = data.__dict__ if hasattr(data, "__dict__") else dict(data)
+        # add a created_at and updated_at timestamps to the data for audit purposes
+        data["created_at"] = datetime.now().isoformat()
+        data["updated_at"] = datetime.now().isoformat()
         # write the data to the file
         with open(file_path, 'w', encoding='utf-8') as json_file:
             json.dump(data, json_file, indent=4, ensure_ascii=False)
         # print a success message
         ic(f"Data Saved to: {file_path}")
 
-    def get_record(self, entity_name: str, record_id: str) -> object | None:
+    def update_record(self, entity_name: str, record_id: str, data: object) -> bool:
         # get the file path
         _, file_path = self.__get_paths(entity_name, record_id)
         # check if the file exists
         if not os.path.exists(file_path):
-            ic("File Not Found:", file_path)
-            return None
-        # load the data from the file
-        with open(file_path, 'r', encoding='utf-8') as json_file:
-            data = json.load(json_file)
+            ic(f"File Not Found: {file_path}")
+            return False
+        # convert the data to a dictionary
+        data = data.__dict__ if hasattr(data, "__dict__") else dict(data)
+        # update the updated_at timestamp in the data for audit purposes
+        data["updated_at"] = datetime.now().isoformat()
+        # write the updated data to the file
+        with open(file_path, 'w', encoding='utf-8') as json_file:
+            json.dump(data, json_file, indent=4, ensure_ascii=False)
         # print a success message
-        ic(f"Data Loaded from: {file_path}")
-        return data
+        ic(f"Data Updated in: {file_path}")
+        return True
 
     def delete_record(self, entity_name: str, record_id: str) -> bool:
         # get the folder and file path
@@ -64,6 +72,20 @@ class JsonDatabase:
         # print a failure message if the file does not exist
         ic(f"File Not Found: {file_path}")
         return False
+
+    def get_record(self, entity_name: str, record_id: str) -> object | None:
+        # get the file path
+        _, file_path = self.__get_paths(entity_name, record_id)
+        # check if the file exists
+        if not os.path.exists(file_path):
+            ic("File Not Found:", file_path)
+            return None
+        # load the data from the file
+        with open(file_path, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+        # print a success message
+        ic(f"({entity_name.upper()}/{record_id}) is Loaded successfully")
+        return data
 
     # get all records in an entity folder in the database folder
     def get_all_records(self, entity_name: str) -> list[object] | None:
