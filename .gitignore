@@ -20,3 +20,6 @@ data/
 *.log
 .vscode/
 .flake8
+
+# sqlite files
+*.db

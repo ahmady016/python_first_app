@@ -9,4 +9,5 @@ dependencies = [
     "icecream>=2.1.10",
     "rich>=14.3.3",
     "uuid>=1.30",
+    "uuid6>=2025.0.1",
 ]
