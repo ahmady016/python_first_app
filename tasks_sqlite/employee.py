@@ -19,10 +19,11 @@ class Employee:
         hire_date: str,
         job_title: str,
         job_type: str,
+        salary: float,
         department_id: str,
         id: str = None,
-        created_at=None,
-        updated_at=None
+        created_at = None,
+        updated_at = None
     ):
         # Basic validation for required fields and formats
         # Validate first name and last name
@@ -48,9 +49,16 @@ class Employee:
         hire_date_dt = datetime.fromisoformat(hire_date)
         if hire_date_dt < birth_date_dt:
             raise ValueError(f"Hire date {hire_date} cannot be before birth date {birth_date}")
-        # validate department_id presence
-        if not department_id:
-            raise ValueError("Department ID is required")
+        # validate salary presence and range
+        if not salary:
+            raise ValueError("Salary is required")
+        if not isinstance(salary, (int, float)):
+            raise ValueError("Salary must be a number")
+        if salary < 4000 or salary > 24000:
+            raise ValueError("Salary must be between 4000 and 24000")
+        # validate department_id presence and type
+        if not department_id or not isinstance(department_id, str):
+            raise ValueError("department_id is required and must be a string")
 
         self.id = id if id else str(uuid7())
         self.first_name = first_name
@@ -62,6 +70,7 @@ class Employee:
         self.hire_date = hire_date
         self.job_title = job_title
         self.job_type = job_type
+        self.salary = salary
         self.department_id = department_id
         self.created_at = created_at
         self.updated_at = updated_at
@@ -95,12 +104,13 @@ hire_date: {self.hire_date}
 years_of_service: {self.years_of_service}
 job_title: {self.job_title}
 job_type: {self.job_type}
+salary: {self.salary}
 department_id: {self.department_id}
 created_at: {self.created_at}
 updated_at: {self.updated_at}
 ----------------"""
     def __repr__(self):
-        return f"Employee(id={self.id}, full_name={self.full_name}, gender={self.gender}, age={self.age}, birth_date={self.birth_date}, email={self.email}, mobile={self.mobile}, hire_date={self.hire_date}, years_of_service={self.years_of_service}, job_title={self.job_title}, job_type={self.job_type}, department_id={self.department_id}, created_at={self.created_at}, updated_at={self.updated_at})"
+        return f"Employee(id={self.id}, full_name={self.full_name}, gender={self.gender}, age={self.age}, birth_date={self.birth_date}, email={self.email}, mobile={self.mobile}, hire_date={self.hire_date}, years_of_service={self.years_of_service}, job_title={self.job_title}, job_type={self.job_type}, salary={self.salary}, department_id={self.department_id}, created_at={self.created_at}, updated_at={self.updated_at})"
     def __dict__(self):
         return {
             "id": self.id,
@@ -114,15 +124,17 @@ updated_at: {self.updated_at}
             "years_of_service": self.years_of_service,
             "job_title": self.job_title,
             "job_type": self.job_type,
+            "salary": self.salary,
             "department_id": self.department_id
         }
 #################################################################################
 
 class EmployeeTable():
-    UPDATABLE_FIELDS = ["first_name", "last_name", "gender", "birth_date", "email", "mobile", "hire_date", "job_title", "job_type", "department_id"]
+    REQUIRED_FIELDS = ["id", "first_name", "last_name", "gender", "birth_date", "email", "mobile", "hire_date", "job_title", "job_type", "salary", "department_id"]
+    UPDATABLE_FIELDS = REQUIRED_FIELDS[1:]
     CREATE_TABLE_COMMAND = """
             CREATE TABLE IF NOT EXISTS employees (
-                id TEXT PRIMARY KEY,
+                id TEXT PRIMARY KEY NOT NULL,
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 gender TEXT NOT NULL,
@@ -132,6 +144,7 @@ class EmployeeTable():
                 hire_date TEXT NOT NULL,
                 job_title TEXT NOT NULL,
                 job_type TEXT NOT NULL,
+                salary FLOAT NOT NULL,
                 department_id TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -151,7 +164,6 @@ class EmployeeTable():
 
     @staticmethod
     def count() -> int:
-        count = 0
         with SqliteDb.connect() as conn:
             count = conn.execute("SELECT COUNT(*) FROM employees;").fetchone()[0]
         return int(count)
@@ -162,16 +174,16 @@ class EmployeeTable():
             return []
 
         for emp in employees:
-            for field in EmployeeTable.UPDATABLE_FIELDS:
+            for field in EmployeeTable.REQUIRED_FIELDS:
                 if field not in emp.__dict__():
                     raise ValueError(f"Missing required field: {field}")
 
-        insert_query = """
-            INSERT INTO employees (id, first_name, last_name, gender, birth_date, email, mobile, hire_date, job_title, job_type, department_id)
-            VALUES (:id, :first_name, :last_name, :gender, :birth_date, :email, :mobile, :hire_date, :job_title, :job_type, :department_id);
-        """
+        fields_placeholder = ", ".join(EmployeeTable.REQUIRED_FIELDS)
+        values_placeholder = ", ".join(":" + field for field in EmployeeTable.REQUIRED_FIELDS)
+        insert_command = f"INSERT INTO employees ({fields_placeholder}) VALUES ({values_placeholder});"
         with SqliteDb.connect() as conn:
-            conn.executemany(insert_query, [emp.__dict__() for emp in employees])
+            conn.executemany(insert_command, [emp.__dict__() for emp in employees])
+
         print(f"Added {len(employees)} employees")
         return [emp.id for emp in employees]
 
@@ -180,17 +192,18 @@ class EmployeeTable():
         if not kwargs:
             raise ValueError("No employee data provided")
 
-        for field in EmployeeTable.UPDATABLE_FIELDS:
+        for field in EmployeeTable.REQUIRED_FIELDS:
             if field not in kwargs:
                 raise ValueError(f"Missing required field: {field}")
 
-        insert_query = """
-            INSERT INTO employees (id, first_name, last_name, gender, birth_date, email, mobile, hire_date, job_title, job_type, department_id)
-            VALUES (:id, :first_name, :last_name, :gender, :birth_date, :email, :mobile, :hire_date, :job_title, :job_type, :department_id);
-        """
+        fields_placeholder = ", ".join(EmployeeTable.REQUIRED_FIELDS)
+        values_placeholder = ", ".join(":" + field for field in EmployeeTable.REQUIRED_FIELDS)
+        insert_command = f"INSERT INTO employees ({fields_placeholder}) VALUES ({values_placeholder});"
         employee = Employee(**kwargs)
         with SqliteDb.connect() as conn:
-            conn.execute(insert_query, employee.__dict__())
+            conn.execute(insert_command, employee.__dict__())
+
+        print(f"employee with id: ({employee.id}) was added successfully")
         return employee.id
 
     @staticmethod
@@ -208,11 +221,11 @@ class EmployeeTable():
         if not set_clauses:
             raise ValueError("No valid fields to update")
 
-        update_query = f"""
-            UPDATE employees SET {', '.join(set_clauses)} WHERE id = :id;
-        """
+        update_query = f"UPDATE employees SET {', '.join(set_clauses)} WHERE id = :id;"
         with SqliteDb.connect() as conn:
             conn.execute(update_query, params)
+
+        print(f"employee with id: ({id}) was updated successfully")
         return conn.total_changes > 0
 
     @staticmethod
@@ -222,6 +235,8 @@ class EmployeeTable():
         """
         with SqliteDb.connect() as conn:
             conn.execute(delete_query, {"id": id})
+
+        print(f"employee with id: ({id}) was deleted successfully")
         return conn.total_changes > 0
 
     @staticmethod
@@ -229,6 +244,16 @@ class EmployeeTable():
         query = "SELECT * FROM employees;"
         with SqliteDb.connect() as conn:
             rows = conn.execute(query).fetchall()
+            if rows and len(rows) > 0:
+                return [Employee(**row) for row in rows]
+        return None
+
+    @staticmethod
+    def get_page(page: int, size: int) -> list[Employee] | None:
+        query = f"SELECT * FROM employees LIMIT :limit OFFSET :offset;"
+        params = {"limit": size, "offset": (page - 1) * size}
+        with SqliteDb.connect() as conn:
+            rows = conn.execute(query, params).fetchall()
             if rows and len(rows) > 0:
                 return [Employee(**row) for row in rows]
         return None

@@ -106,11 +106,12 @@ updated_at: {self.updated_at}
 ###################################################################################
 
 class TasksTable():
-    REQUIRED_FIELDS = ["title", "description", "create_date", "due_date", "employee_id"]
-    UPDATABLE_FIELDS = ["title", "description", "create_date", "due_date", "complete_date", "priority", "state", "employee_id"]
+    REQUIRED_FIELDS = ["id", "title", "description", "create_date", "due_date", "employee_id"]
+    ALL_FIELDS = ["id", "title", "description", "create_date", "due_date", "complete_date", "priority", "state", "employee_id"]
+    UPDATABLE_FIELDS = ALL_FIELDS[1:]
     CREATE_TABLE_COMMAND = """
         CREATE TABLE IF NOT EXISTS tasks (
-            id TEXT PRIMARY KEY,
+            id TEXT PRIMARY KEY NOT NULL,
             title TEXT UNIQUE NOT NULL,
             description TEXT NOT NULL,
             create_date TEXT NOT NULL,
@@ -137,7 +138,6 @@ class TasksTable():
 
     @staticmethod
     def count():
-        count = 0
         with SqliteDb.connect() as conn:
             count = conn.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]
         return int(count)
@@ -156,12 +156,13 @@ class TasksTable():
             fields_placeholder = ", ".join(TasksTable.REQUIRED_FIELDS)
             values_placeholder = ", ".join(":" + field for field in TasksTable.REQUIRED_FIELDS)
         else:
-            fields_placeholder = ", ".join(TasksTable.UPDATABLE_FIELDS)
-            values_placeholder = ", ".join(":" + field for field in TasksTable.UPDATABLE_FIELDS)
+            fields_placeholder = ", ".join(TasksTable.ALL_FIELDS)
+            values_placeholder = ", ".join(":" + field for field in TasksTable.ALL_FIELDS)
 
         insert_command = f"INSERT INTO tasks ({fields_placeholder}) VALUES ({values_placeholder});"
         with SqliteDb.connect() as conn:
             conn.executemany(insert_command, [task.__dict__() for task in tasks])
+
         print(f"Added {len(tasks)} tasks")
         return [task.id for task in tasks]
 
@@ -179,13 +180,15 @@ class TasksTable():
             fields_placeholder = ", ".join(TasksTable.REQUIRED_FIELDS)
             values_placeholder = ", ".join(":" + field for field in TasksTable.REQUIRED_FIELDS)
         else:
-            fields_placeholder = ", ".join(TasksTable.UPDATABLE_FIELDS)
-            values_placeholder = ", ".join(":" + field for field in TasksTable.UPDATABLE_FIELDS)
+            fields_placeholder = ", ".join(TasksTable.ALL_FIELDS)
+            values_placeholder = ", ".join(":" + field for field in TasksTable.ALL_FIELDS)
 
         insert_command = f"INSERT INTO tasks ({fields_placeholder}) VALUES ({values_placeholder});"
         task = Task(**kwargs)
         with SqliteDb.connect() as conn:
             conn.execute(insert_command, task.__dict__())
+
+        print(f"task with id: ({task.id}) was added successfully")
         return task.id
 
     @staticmethod
@@ -206,6 +209,8 @@ class TasksTable():
         update_command = f"UPDATE tasks SET {", ".join(set_clauses)} WHERE id = :id;"
         with SqliteDb.connect() as conn:
             conn.execute(update_command, params)
+
+        print(f"task with id: ({id}) was updated successfully")
         return conn.total_changes > 0
 
     @staticmethod
@@ -213,6 +218,8 @@ class TasksTable():
         delete_command = "DELETE FROM tasks WHERE id = :id;"
         with SqliteDb.connect() as conn:
             conn.execute(delete_command, {"id": id})
+
+        print(f"task with id: ({id}) was deleted successfully")
         return conn.total_changes > 0
 
     @staticmethod
@@ -220,6 +227,16 @@ class TasksTable():
         query = "SELECT * FROM tasks;"
         with SqliteDb.connect() as conn:
             rows = conn.execute(query).fetchall()
+            if rows and len(rows) > 0:
+                return [Task(**row) for row in rows]
+        return None
+
+    @staticmethod
+    def get_page(page: int, size: int) -> list[Task] | None:
+        query = f"SELECT * FROM tasks LIMIT :limit OFFSET :offset;"
+        params = {"limit": size, "offset": (page - 1) * size}
+        with SqliteDb.connect() as conn:
+            rows = conn.execute(query, params).fetchall()
             if rows and len(rows) > 0:
                 return [Task(**row) for row in rows]
         return None

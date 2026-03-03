@@ -46,7 +46,7 @@ class DepartmentTable():
     UPDATABLE_FIELDS = ["name", "description"]
     CREATE_TABLE_COMMAND = """
             CREATE TABLE IF NOT EXISTS departments (
-                id TEXT PRIMARY KEY,
+                id TEXT PRIMARY KEY NOT NULL,
                 name TEXT UNIQUE NOT NULL,
                 description TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -66,7 +66,6 @@ class DepartmentTable():
 
     @staticmethod
     def count() -> int:
-        count = 0
         with SqliteDb.connect() as conn:
             count = conn.execute("SELECT COUNT(*) FROM departments;").fetchone()[0]
         return int(count)
@@ -86,17 +85,21 @@ class DepartmentTable():
         """
         with SqliteDb.connect() as conn:
             conn.executemany(insert_command, [dept.__dict__() for dept in departments])
+
         print(f"Added {len(departments)} departments")
         return [dept.id for dept in departments]
 
     @staticmethod
     def add(name: str, description: str) -> str:
         insert_command = """
-            INSERT INTO departments (id, name, description) VALUES (:name, :description);
+            INSERT INTO departments (id, name, description)
+            VALUES (:id, :name, :description);
         """
         department = Department(name=name, description=description)
         with SqliteDb.connect() as conn:
             conn.execute(insert_command, department.__dict__())
+
+        print(f"department with id {department.id} added successfully")
         return department.id
 
     @staticmethod
@@ -114,21 +117,21 @@ class DepartmentTable():
         if not set_clauses:
             raise ValueError("No valid fields to update")
 
-        update_command = f"""
-            UPDATE departments SET {", ".join(set_clauses)} WHERE id = :id;
-        """
+        update_command = f"UPDATE departments SET {", ".join(set_clauses)} WHERE id = :id;"
         params = {**kwargs, "id": id}
         with SqliteDb.connect() as conn:
             conn.execute(update_command, params)
+
+        print(f"department with id: ({id}) was updated successfully")
         return conn.total_changes > 0
 
     @staticmethod
     def delete(id: str) -> bool:
-        delete_command = """
-        DELETE FROM departments WHERE id = :id;
-        """
+        delete_command = "DELETE FROM departments WHERE id = :id;"
         with SqliteDb.connect() as conn:
             conn.execute(delete_command, {"id": id})
+
+        print(f"department with id: ({id}) was deleted successfully")
         return conn.total_changes > 0
 
     @staticmethod
@@ -136,6 +139,16 @@ class DepartmentTable():
         query = "SELECT * FROM departments;"
         with SqliteDb.connect() as conn:
             rows = conn.execute(query).fetchall()
+            if rows and len(rows) > 0:
+                return [Department(**row) for row in rows]
+        return None
+
+    @staticmethod
+    def get_page(page: int, size: int) -> list[Department] | None:
+        query = f"SELECT * FROM departments LIMIT :limit OFFSET :offset;"
+        params = {"limit": size, "offset": (page - 1) * size}
+        with SqliteDb.connect() as conn:
+            rows = conn.execute(query, params).fetchall()
             if rows and len(rows) > 0:
                 return [Department(**row) for row in rows]
         return None

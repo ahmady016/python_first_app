@@ -74,18 +74,18 @@ class TasksDb:
         min_count: int = 100,
         max_count: int = 200
     ) -> list[Employee]:
-        random_gender = TasksDb.FAKER.random_element(Employee.GENDERS)
         return  [
             Employee(
                 TasksDb.FAKER.first_name(),
                 TasksDb.FAKER.last_name(),
-                random_gender,
+                TasksDb.FAKER.random_element(Employee.GENDERS),
                 TasksDb.FAKER.date_of_birth(minimum_age=20, maximum_age=60).strftime("%Y-%m-%d"),
                 TasksDb.FAKER.phone_number(),
                 TasksDb.FAKER.email(),
                 TasksDb.FAKER.date_between(start_date="-14y", end_date="today").strftime("%Y-%m-%d"),
                 TasksDb.FAKER.job(),
                 TasksDb.FAKER.random_element(Employee.JOB_TYPES),
+                TasksDb.FAKER.random_int(4000, 24000),
                 TasksDb.FAKER.random_element(departments).id
             )
             for _ in range(TasksDb.FAKER.random_int(min_count, max_count))
