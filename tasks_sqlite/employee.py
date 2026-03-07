@@ -192,7 +192,7 @@ class EmployeeTable():
         if not kwargs:
             raise ValueError("No employee data provided")
 
-        for field in EmployeeTable.REQUIRED_FIELDS:
+        for field in EmployeeTable.UPDATABLE_FIELDS:
             if field not in kwargs:
                 raise ValueError(f"Missing required field: {field}")
 

@@ -7,6 +7,7 @@ from sqlite_db import SqliteDb
 from department import DepartmentTable, Department
 from employee import EmployeeTable, Employee
 from task import TasksTable, Task
+from tasks_db_views import TasksDbViews
 #####################################################################################
 class TasksDb:
     FAKER = Faker()
@@ -18,6 +19,7 @@ class TasksDb:
     DEPARTMENTS = DepartmentTable
     EMPLOYEES = EmployeeTable
     TASKS = TasksTable
+    VIEWS = TasksDbViews
 
     @staticmethod
     def create(db_path: str = None):
@@ -30,6 +32,7 @@ class TasksDb:
         DepartmentTable.create()
         EmployeeTable.create()
         TasksTable.create()
+        TasksDbViews.create()
         print("Database created successfully")
 
         if not TasksDb.has_data():
@@ -59,8 +62,8 @@ class TasksDb:
     # generate random range of departments
     @staticmethod
     def random_departments(
-        min_count: int = 10,
-        max_count: int = 15
+        min_count: int = 20,
+        max_count: int = 30
     ) -> list[Department]:
         return [
             Department(TasksDb.FAKER.company(), TasksDb.FAKER.catch_phrase())
@@ -71,8 +74,8 @@ class TasksDb:
     @staticmethod
     def random_employees(
         departments: list[Department],
-        min_count: int = 100,
-        max_count: int = 200
+        min_count: int = 360,
+        max_count: int = 640
     ) -> list[Employee]:
         return  [
             Employee(
@@ -95,8 +98,8 @@ class TasksDb:
     @staticmethod
     def random_tasks(
         employees: list[Employee],
-        min_count: int = 360,
-        max_count: int = 640
+        min_count: int = 2500,
+        max_count: int = 5000
     ) -> list[Task]:
         tasks = []
         for _ in range(TasksDb.FAKER.random_int(min_count, max_count)):
@@ -109,14 +112,14 @@ class TasksDb:
             complete_date = completed_at_start_date + timedelta(days=TasksDb.FAKER.random_int(1, 30))
             # create a task object and append it to the tasks list
             task = Task(
-                TasksDb.FAKER.sentence(nb_words=TasksDb.FAKER.random_int(3, 7)),
+                TasksDb.FAKER.sentence(nb_words=TasksDb.FAKER.random_int(10, 15)),
                 TasksDb.FAKER.sentence(nb_words=TasksDb.FAKER.random_int(20, 50)),
                 created_date.strftime("%Y-%m-%d %H:%M:%S"),
                 due_date.strftime("%Y-%m-%d %H:%M:%S"),
+                TasksDb.FAKER.random_element(employees).id,
                 complete_date.strftime("%Y-%m-%d %H:%M:%S"),
                 TasksDb.FAKER.random_element(Task.TASK_PRIORITIES),
-                TasksDb.FAKER.random_element(Task.TASK_STATES),
-                TasksDb.FAKER.random_element(employees).id
+                TasksDb.FAKER.random_element(Task.TASK_STATES)
             )
             tasks.append(task)
         return tasks

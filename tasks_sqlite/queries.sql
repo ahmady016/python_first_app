@@ -1,0 +1,195 @@
+-- SQLite
+-- ######################################################################################
+-- SELECT * FROM departments
+-- SELECT COUNT(*) AS employees FROM employees
+-- SELECT DISTINCT employee_id FROM tasks WHERE [state] IN ('completed', 'cancelled')
+-- ######################################################################################
+-- TOP_EARNERS_EMPLOYEES_VIEW
+-- ######################################################################################
+-- SELECT
+--     id,
+--     first_name || ' ' || last_name AS full_name,
+--     gender,
+--     email,
+--     birth_date,
+--     hire_date,
+--     job_title,
+--     job_type,
+--     salary
+-- FROM employees
+-- ORDER BY salary DESC
+-- ######################################################################################
+-- TOP_BUSIEST_EMPLOYEES_VIEW
+-- ######################################################################################
+-- SELECT
+--     e.id AS id,
+--     e.first_name || ' ' || e.last_name AS full_name,
+--     e.birth_date,
+--     e.gender,
+--     e.email,
+--     e.hire_date,
+--     e.job_title,
+--     e.job_type,
+--     e.salary,
+--     COUNT(t.id) AS tasks
+-- FROM employees e JOIN tasks t ON e.id = t.employee_id
+-- -- WHERE t.state IN ('pending', 'in_progress', 'paused')
+-- GROUP BY e.id, e.email, e.job_title, e.job_type, e.salary
+-- ORDER BY tasks DESC
+-- ######################################################################################
+-- TOP_ACHIEVERS_EMPLOYEES_VIEW
+-- ######################################################################################
+-- SELECT
+--     e.id AS id,
+--     e.first_name || ' ' || e.last_name AS full_name,
+--     e.birth_date,
+--     e.gender,
+--     e.email,
+--     e.hire_date,
+--     e.job_title,
+--     e.job_type,
+--     e.salary,
+--     COUNT(t.id) AS tasks
+-- FROM employees e JOIN tasks t ON e.id = t.employee_id
+-- WHERE t.state = 'completed'
+-- GROUP BY e.id
+-- ORDER BY tasks DESC
+-- ######################################################################################
+-- EMPLOYEES_TASKS_VIEW
+-- ######################################################################################
+-- SELECT
+--     e.id AS id,
+--     e.first_name || ' ' || e.last_name AS full_name,
+--     e.birth_date,
+--     e.gender,
+--     e.email,
+--     e.hire_date,
+--     e.job_title,
+--     e.job_type,
+--     e.salary,
+--     COUNT(t.id) AS tasks
+-- FROM employees e LEFT JOIN tasks t ON e.id = t.employee_id
+-- GROUP BY e.id
+-- ORDER BY tasks DESC
+-- ######################################################################################
+-- EMPLOYEES_TASKS_BY_STATE_VIEW
+-- ######################################################################################
+-- SELECT
+--     e.id,
+--     e.first_name || ' ' || e.last_name AS full_name,
+--     e.gender,
+--     e.job_title,
+--     e.job_type,
+--     e.salary,
+--     COUNT(CASE WHEN t.state = 'pending' THEN 1 END) AS pending,
+--     COUNT(CASE WHEN t.state = 'in_progress' THEN 1 END) AS in_progress,
+--     COUNT(CASE WHEN t.state = 'paused' THEN 1 END) AS paused,
+--     COUNT(CASE WHEN t.state = 'completed' THEN 1 END) AS completed,
+--     COUNT(CASE WHEN t.state = 'cancelled' THEN 1 END) AS cancelled,
+--     COUNT(t.id) AS total_tasks
+-- FROM employees e LEFT JOIN tasks t ON e.id = t.employee_id
+-- GROUP BY e.id
+-- ORDER BY total_tasks DESC
+-- ######################################################################################
+-- EMPLOYEES_TASKS_BY_PRIORITY_VIEW
+-- ######################################################################################
+-- SELECT
+--     e.id,
+--     e.first_name || ' ' || e.last_name AS full_name,
+--     e.gender,
+--     e.job_title,
+--     e.job_type,
+--     e.salary,
+--     COUNT(CASE WHEN t.priority = 'high' THEN 1 END) AS high,
+--     COUNT(CASE WHEN t.priority = 'medium' THEN 1 END) AS medium,
+--     COUNT(CASE WHEN t.priority = 'low' THEN 1 END) AS low,
+--     COUNT(t.id) AS total_tasks
+-- FROM employees e LEFT JOIN tasks t ON e.id = t.employee_id
+-- GROUP BY e.id
+-- ORDER BY total_tasks DESC
+-- ######################################################################################
+-- DEPARTMENTS_MEMBERS_VIEW
+-- ######################################################################################
+-- SELECT
+--     dept.id AS id,
+--     dept.name AS name,
+--     COUNT(emp.id) as employees
+-- FROM departments dept JOIN employees emp ON dept.id = emp.department_id
+-- GROUP BY dept.id, dept.name
+-- ORDER BY employees DESC
+-- ######################################################################################
+-- DEPARTMENTS_MEMBERS_BY_GENDER_VIEW
+-- ######################################################################################
+-- SELECT
+--     d.id,
+--     d.name,
+--     COUNT(CASE WHEN e.gender = 'male' THEN 1 END) AS male,
+--     COUNT(CASE WHEN e.gender = 'female' THEN 1 END) AS female,
+--     COUNT(e.id) AS total_employees
+-- FROM departments d LEFT JOIN employees e ON d.id = e.department_id
+-- GROUP BY d.id
+-- ORDER BY total_employees DESC
+-- ######################################################################################
+-- DEPARTMENTS_MEMBERS_BY_TYPE_VIEW
+-- ######################################################################################
+-- SELECT
+--     d.id,
+--     d.name,
+--     COUNT(CASE WHEN e.job_type = 'full-time' THEN 1 END) AS full_time,
+--     COUNT(CASE WHEN e.job_type = 'part-time' THEN 1 END) AS part_time,
+--     COUNT(CASE WHEN e.job_type = 'contractor' THEN 1 END) AS contractor,
+--     COUNT(CASE WHEN e.job_type = 'internship' THEN 1 END) AS internship,
+--     COUNT(e.id) AS total_employees
+-- FROM departments d LEFT JOIN employees e ON d.id = e.department_id
+-- GROUP BY d.id
+-- ORDER BY total_employees DESC
+-- ######################################################################################
+-- SELECT
+--     first_name || ' ' || last_name AS full_name,
+--     gender,
+--     job_title,
+--     job_type,
+--     salary,
+--     MAX(0, (strftime('%Y', 'now') - strftime('%Y', birth_date)) -
+--     (CASE WHEN strftime('%m-%d', 'now') >= strftime('%m-%d', birth_date) THEN 1 ELSE 0 END)) AS age,
+--     MAX(0, (strftime('%Y', 'now') - strftime('%Y', hire_date)) -
+--     (CASE WHEN strftime('%m-%d', 'now') >= strftime('%m-%d', hire_date) THEN 1 ELSE 0 END)) AS experience
+-- FROM employees
+-- ORDER BY experience DESC, age DESC
+-- ######################################################################################
+-- EMPLOYEES_EXPERIENCE_AND_AGE_BY_YEAR_AND_MONTH_VIEW
+-- ######################################################################################
+-- WITH total_months AS (
+--     SELECT
+--         first_name || ' ' || last_name AS full_name,
+--         gender,
+--         job_title,
+--         job_type,
+--         salary,
+--         CAST((julianday('now') - julianday(birth_date)) / 30.4375 AS INT) AS age_months,
+--         CAST((julianday('now') - julianday(hire_date)) / 30.4375 AS INT) AS experience_months
+--     FROM employees
+-- )
+-- SELECT
+--     full_name,
+--     gender,
+--     job_title,
+--     job_type,
+--     salary,
+--     (age_months / 12) || ' Years, ' || (age_months % 12) || ' Months' AS age,
+--     (experience_months / 12) || ' Years, ' || (experience_months % 12) || ' Months' AS experience
+-- FROM total_months
+-- ORDER BY experience_months DESC, age_months DESC
+-- ######################################################################################
+-- EMPLOYEES_EXPERIENCE_AND_AGE_BY_YEAR_VIEW
+-- ######################################################################################
+-- SELECT
+--     first_name || ' ' || last_name AS full_name,
+--     gender,
+--     job_title,
+--     job_type,
+--     salary,
+--     ROUND(CAST(CAST((julianday('now') - julianday(birth_date)) / 30.4375 AS FLOAT) / 12 AS FLOAT), 2) AS age,
+--     ROUND(CAST(CAST((julianday('now') - julianday(hire_date)) / 30.4375 AS FLOAT) / 12 AS FLOAT), 2) AS experience
+-- FROM employees
+-- ORDER BY experience DESC, age DESC

@@ -15,10 +15,10 @@ class Task:
         description: str,
         create_date: str,
         due_date: str,
-        complete_date: str,
-        priority: str,
-        state: str,
         employee_id: str,
+        complete_date: str = None,
+        priority: str = "low",
+        state: str = "pending",
         id: str = None,
         created_at: str = None,
         updated_at: str = None
@@ -42,17 +42,17 @@ class Task:
         if not employee_id or not isinstance(employee_id, str):
             raise ValueError("Task employee_id is required and must be a string")
 
-        # convert create_date, due_date and complete_date to datetime objects
+        # convert create_date and due_date to datetime objects
         create_date_dt = datetime.fromisoformat(create_date)
         due_date_dt = datetime.fromisoformat(due_date)
-        complete_date_dt = datetime.fromisoformat(complete_date)
-        # Validate date constraints
-        # due_date must be after create_date
+        # validate date constraints due_date must be after create_date
         if due_date_dt <= create_date_dt:
             raise ValueError(f"due_date ({due_date}) must be after create_date ({create_date})")
-        # complete_date must be after create_date
-        if complete_date_dt <= create_date_dt:
-            raise ValueError(f"complete_date ({complete_date}) must be after create_date ({create_date})")
+        # validate date constraints complete_date if provided must be after create_date
+        if complete_date:
+            complete_date_dt = datetime.fromisoformat(complete_date)
+            if complete_date_dt <= create_date_dt:
+                raise ValueError(f"complete_date ({complete_date}) must be after create_date ({create_date})")
 
         self.id = id if id else str(uuid7())
         self.title = title
@@ -108,6 +108,7 @@ updated_at: {self.updated_at}
 class TasksTable():
     REQUIRED_FIELDS = ["id", "title", "description", "create_date", "due_date", "employee_id"]
     ALL_FIELDS = ["id", "title", "description", "create_date", "due_date", "complete_date", "priority", "state", "employee_id"]
+    CREATE_FIELDS = REQUIRED_FIELDS[1:]
     UPDATABLE_FIELDS = ALL_FIELDS[1:]
     CREATE_TABLE_COMMAND = """
         CREATE TABLE IF NOT EXISTS tasks (
@@ -171,7 +172,7 @@ class TasksTable():
         if not kwargs:
             raise ValueError("No task data provided")
 
-        for field in TasksTable.REQUIRED_FIELDS:
+        for field in TasksTable.CREATE_FIELDS:
             if field not in kwargs:
                 raise ValueError(f"Missing required field: {field}")
 
